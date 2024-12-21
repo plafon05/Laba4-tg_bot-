@@ -117,7 +117,7 @@ def search_publications_by_topic(topic, limit):
     try:
         url = f"https://api.crossref.org/works?query={topic}"
         response = requests.get(url)
-        response.raise_for_status()
+        response.raise_for_status() 
         items = response.json().get('message', {}).get('items', [])
         return [item.get('URL', 'Ссылка не найдена') for item in items[:limit] if filter_by_language(item)]
     except requests.RequestException:
