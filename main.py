@@ -11,16 +11,13 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-# Инициализация бота и диспетчера
 bot = Bot(token=os.getenv("BOT_TOKEN"))
 storage = MemoryStorage()
 dp = Dispatcher(storage=storage)
 
-# Настройки по умолчанию
-language_filter = "любой"  # По умолчанию язык "любой"
-default_publications = 3  # Количество публикаций по умолчанию
+language_filter = "любой"
+default_publications = 3
 
-# Состояния FSM
 class PublicationStates(StatesGroup):
     wait = State()
     waiting_for_num = State()
@@ -29,7 +26,6 @@ class PublicationStates(StatesGroup):
     waiting_for_doi = State()
     waiting_for_language = State()
 
-# Функция для генерации кнопок
 def get_main_keyboard():
     buttons = [
         [KeyboardButton(text="🔍 Поиск публикации по теме")],
@@ -40,10 +36,8 @@ def get_main_keyboard():
     ]
     return ReplyKeyboardMarkup(keyboard=buttons, resize_keyboard=True)
 
-# Обработчики сообщений
 @dp.message(CommandStart())
 async def send_welcome(message: types.Message, state: FSMContext):
-    # Устанавливаем количество публикаций по умолчанию, если не установлено
     data = await state.get_data()
     if "num_publications" not in data:
         await state.update_data(num_publications=default_publications)
@@ -79,7 +73,6 @@ async def search_by_topic(message: types.Message, state: FSMContext):
 async def handle_topic_input(message: types.Message, state: FSMContext):
     topic = message.text
     data = await state.get_data()
-    # Получаем количество публикаций из состояния
     num_publications = data.get("num_publications", default_publications)
     print(num_publications)
     results = search_publications_by_topic(topic, num_publications)
@@ -91,7 +84,6 @@ async def handle_topic_input(message: types.Message, state: FSMContext):
         await message.answer("Не удалось найти публикации по указанной теме.")
     await state.clear()
 
-# Функция для настройки языка публикаций
 @dp.message(lambda message: message.text == "🌐 Настройки языка публикаций")
 async def set_language(message: types.Message, state: FSMContext):
     global language_filter
@@ -112,7 +104,6 @@ async def handle_language_input(message: types.Message, state: FSMContext):
     else:
         await message.answer("Неверный выбор. Пожалуйста, выберите язык из предложенных.")
 
-# Функции поиска через CrossRef API
 def search_publications_by_topic(topic, limit):
     try:
         url = f"https://api.crossref.org/works?query={topic}"
